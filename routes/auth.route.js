@@ -3,11 +3,13 @@ const router= express.Router();
 import bcrypt from "bcryptjs"
 import User from "../models/user.model.js"
 import { generateToke } from "../lib/utlis.js";
+import {protechroutes} from "../middleware/ProtechRoute.js"
+import cloudinary from "../lib/cloudinary.js";
 
 router.post("/signup",async (req,res)=>{
 //  res.send("signup create")
 try{
-    const {email,fullName,password}=req.body;
+    const {email,fullName,password,profilePic}=req.body;
     console.log(email)
     if(password.length<6){
         return res.status(400).json({message:"Password must have big in size"}        )
@@ -20,7 +22,8 @@ try{
     const newUser= new User({
         fullName:fullName,
         email:email,
-        password:hashpassword       
+        password:hashpassword    ,
+        profilePic:profilePic ,
     })
     
     if(newUser){
@@ -31,7 +34,7 @@ try{
     _id:newUser._id,
     fullName:newUser.fullName,
     email:newUser.email,
-    profilePic:newUser.profilePic 
+    profilePic:newUser.profilePic
  })
     }else{
         res.status(400).json({message:"Plz fill Vaild data "})
@@ -43,13 +46,6 @@ try{
 
 }
 })
-// router.get("/logout",(req,res)=>{
-//     try{
-        
-//     }catch(error){
-//         message:"Internal server error "+error}
-    
-//    })
    router.post("/login",async (req,res)=>{
        const {email,password}=req.body;
     try{
@@ -72,7 +68,7 @@ try{
         res.status(500).send("Server error"+err)
     } 
    })
-   router.post("/logout",()=>{
+   router.post("/logout",(req,res)=>{
     try{
 
         res.cookie("jwt","",{maxAge:0})
@@ -84,4 +80,32 @@ try{
 
     }
    })
+
+router.put('/profilechange',protechroutes,async(req,res)=>{
+    // const {profilecha}
+    try{
+    const {profilepic}=req.body;
+    const userId = req.user._id;
+    if(!profilepic){
+      return   res.status(404).json({message:"not provide any profile"})
+    }
+   const updateResponce = await cloudinary.uploader.upload(profilepic);
+   const updateduser= await User.findByIdAndUpdate(userId,{profilePic:updateResponce.secure_url},{new:true})
+   res.status(200).json(updateduser)
+}catch(error){
+    console.log(error+"something happend un profilechange routes cheeak to admin ")
+    res.status(500).json({message:"Internal server error "})
+}
+
+
+})
+router.get('/check',protechroutes,(req,res)=>{
+    try{
+            res.status(200).json(req.user)
+    }
+    catch(error){
+        console.log("ERROR OCCUR CONTROLLER"+error+"cheak /cheak routes")
+          res.status(500).json({message:"Internal server error "})
+    }
+})
 export default router;
