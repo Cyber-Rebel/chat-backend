@@ -43,10 +43,45 @@ try{
 
 }
 })
-router.get("/logout",(req,res)=>{
-    res.send("logout create")
+// router.get("/logout",(req,res)=>{
+//     try{
+        
+//     }catch(error){
+//         message:"Internal server error "+error}
+    
+//    })
+   router.post("/login",async (req,res)=>{
+       const {email,password}=req.body;
+    try{
+        const user= await User.findOne({email})
+        if(!user) return res.status(404).json({message:"User not exit create a new user usign same gamil"});
+        const ispassword=await bcrypt.compare(password,user.password)
+        if(!ispassword){
+            return res.status(404).json({message:"Invaild data"});
+        }
+        generateToke(user._id,res)  
+        res.status(200).json({
+            id:user._id,
+    fullName:user.fullName,
+    email:user.email,
+    profilePic:user.profilePic 
+        })
+        
+    }catch(err){
+        console.log(err)
+        res.status(500).send("Server error"+err)
+    } 
    })
-   router.get("/login",(req,res)=>{
-    res.send("login create")
+   router.post("/logout",()=>{
+    try{
+
+        res.cookie("jwt","",{maxAge:0})
+        res.status(200).json({message:"logout is successfully   "})
+
+    }catch(error){
+        console.log("logout error "+error)
+        res.status(500).json({message:"Server error provide error"})
+
+    }
    })
 export default router;
