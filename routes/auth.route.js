@@ -104,8 +104,8 @@ router.get('/check',protechroutes,(req,res)=>{
             res.status(200).json(req.user)
     }
     catch(error){
-        console.log("ERROR OCCUR CONTROLLER"+error+"cheak /cheak routes")
-          res.status(500).json({message:"Internal server error "})
+        console.log("ERROR OCCUR CONTROLLER"+ error.message)
+        return  res.status(500).json({message:"Internal server error "})
     }
 })
 export default router;

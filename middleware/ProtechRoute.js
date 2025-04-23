@@ -19,7 +19,7 @@ export const protechroutes= async (req,res,next)=>{
         next();
     }catch(error){
         console.log("Protechroutes errror"+error)
-        // res.status(500).json({ message: "Authentication failed" });
+        return   res.status(500).json({ message: "Authentication failed" });
     }
 
 }
